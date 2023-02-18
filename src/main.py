@@ -9,7 +9,7 @@ from src.crud import get_by_short_key, create_url_db
 app = FastAPI()
 
 
-@app.get("/{short_key}")
+@app.get("/{short_key}", tags=["Short URL"])
 def redirect_url(short_key: str, request: Request):
     with get_db() as db:
         if url := get_by_short_key(db, short_key):
@@ -18,7 +18,7 @@ def redirect_url(short_key: str, request: Request):
     return HTMLResponse(status_code=404, content="Not Found URL")
 
 
-@app.post("/short-url")
+@app.post("/short-url", tags=["Short URL"])
 def create_url(url: schemas.URL):
     short_key = random_str()
     with get_db() as db:

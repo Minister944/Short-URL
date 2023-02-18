@@ -10,4 +10,3 @@ class URL(Base):
     id = Column(Integer, primary_key=True)
     short_key = Column(String, unique=True)
     original_url = Column(String)
-    is_active = Column(Boolean, default=True)
