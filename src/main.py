@@ -1,35 +1,27 @@
 from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse, HTMLResponse
 from src import schemas
-from src.database import models
-import os
-from dotenv import load_dotenv
 from src.database.db_conf import get_db
-import random
-from fastapi.responses import RedirectResponse
+from src.generator import random_str
+from src.crud import get_by_short_key, create_url_db
+
 
 app = FastAPI()
-load_dotenv()
 
 
 @app.get("/{short_key}")
 def redirect_url(short_key: str, request: Request):
     with get_db() as db:
-        db_url = (
-            db.query(models.URL)
-            .filter(models.URL.short_key == short_key, models.URL.is_active)
-            .first()
-        )
+        if url := get_by_short_key(db, short_key):
+            return RedirectResponse(url.original_url)
 
-    if db_url:
-        return RedirectResponse(db_url.original_url)
+    return HTMLResponse(status_code=404, content="Not Found URL")
 
 
 @app.post("/short-url")
 def create_url(url: schemas.URL):
-    chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    short_key = "".join(random.choice(chars) for _ in range(8))
-    new_url = models.URL(short_key=short_key, original_url=url.url)
+    short_key = random_str()
     with get_db() as db:
-        db.add(new_url)
-        db.commit()
+        create_url_db(db, short_key=short_key, original_url=url.url)
+
     return schemas.URL(url=short_key)
