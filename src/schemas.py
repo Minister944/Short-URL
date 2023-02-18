@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class URLSchema(BaseModel):
+class URL(BaseModel):
     url: str
